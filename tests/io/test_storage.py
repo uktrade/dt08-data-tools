@@ -19,3 +19,6 @@ def test_s3_storage():
     print('actual file data: ', test_file_data_actual)
 
     assert test_file_data == test_file_data_actual
+
+    # clean up
+    s3_storage.delete_file(test_file_name)

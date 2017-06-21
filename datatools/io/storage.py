@@ -11,13 +11,17 @@ class Storage(metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    def write_file(self, file_name, data):
+        ...
+
+    @abstractmethod
     def read_file(self, file_name):
         ...
 
     @abstractmethod
-    def write_file(self, file_name, data):
+    def delete_file(self, file_name):
         ...
-        
+
     @abstractmethod
     def create_storage(self, folder_name):
         ...
@@ -34,6 +38,15 @@ class S3Storage(Storage):
     def _get_s3_object(self, key):
         s3 = boto3.resource('s3')
         return s3.Object(self.bucket_name, key)
+
+    def delete_file(self, file_name):
+        b = self._get_bucket()
+        b.delete_objects(Delete={
+            'Objects': [
+                {'Key': file_name}
+                ]
+            }
+        )
 
     def write_file(self, file_name, data):
         b = self._get_bucket()
