@@ -5,14 +5,24 @@ import uuid
 import pytest
 
 from datatools.io import storage
+from datatools.io.storage import S3Storage
 
 
 @pytest.mark.skipif('AWS_DEFAULT_REGION' not in os.environ,
                     reason='test requires AWS environment')
-def test_s3_storage():
-    bucket = 'input.data.dev.uktrade.io'
-    s3_storage = storage.S3Storage(bucket)
-    storage_test(s3_storage)
+class TestS3Storage:
+    def test_storage(self):
+        bucket = 'input.data.dev.uktrade.io'
+        s3_storage = S3Storage(bucket)
+        storage_test(s3_storage)
+
+    def test_storage_with_prefix_folder(self):
+        bucket = 'input.data.dev.uktrade.io/inputs_tests'
+        s3_storage = S3Storage(bucket)
+        storage_test(s3_storage)
+    
+    def test_strip_storage_scheme(self):
+        assert S3Storage('s3://somebucket').bucket_name == S3Storage('somebucket').bucket_name
 
 
 def test_local_storage():
