@@ -98,7 +98,9 @@ class LocalStorage(Storage):
         self._path = Path(base_path)
 
     def get_file_names(self):
-        yield from self._path.glob('**/*')
+        for p in self._path.glob('**/*'):
+            if p.is_file():
+                yield str(p)
 
     def write_file(self, file_name, data):
         path = self._full_path(file_name)
