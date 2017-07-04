@@ -14,9 +14,6 @@ RUN chmod 777 /usr/src/app
 # create application environment
 RUN conda env create -q -f environment.yml
 
-# run tests
-RUN /bin/bash -c "source activate dt08 && pip install . && pytest -s"
-
 # create long running process to prevent pod crash
 RUN touch dummy
 CMD tail -f dummy
