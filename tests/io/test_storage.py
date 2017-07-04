@@ -20,15 +20,23 @@ class TestS3Storage:
         bucket = 'input.data.dev.uktrade.io/inputs_tests'
         s3_storage = S3Storage(bucket)
         storage_test(s3_storage)
-    
+
     def test_strip_storage_scheme(self):
-        assert S3Storage('s3://somebucket').bucket_name == S3Storage('somebucket').bucket_name
+        assert S3Storage('s3://somebucket').bucket_name == \
+            S3Storage('somebucket').bucket_name
 
 
-def test_local_storage():
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        local_storage = storage.LocalStorage(tmpdirname)
-        storage_test(local_storage)
+class TestLocalStorage:
+    def test_storage(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_storage = storage.LocalStorage(tmpdirname)
+            storage_test(local_storage)
+
+    def test_does_not_present_subfolders(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_storage = storage.LocalStorage(tmpdirname)
+            os.makedirs(os.path.join(tmpdirname, 'a_sub_folder'))
+            assert len(list(local_storage.get_file_names())) == 0
 
 
 def storage_test(storage_instance):
