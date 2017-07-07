@@ -1,10 +1,9 @@
 import os
 import tempfile
-import uuid
 import zipfile
 
-from datatools.io.storage import Storage, LocalStorage
 from datatools.io.datafile_provider import DatafileProvider
+from datatools.io.storage import LocalStorage, Storage
 
 
 class StorageMock(Storage):

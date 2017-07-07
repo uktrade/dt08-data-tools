@@ -1,6 +1,6 @@
+import zipfile
 from collections import namedtuple
 from io import BytesIO
-import zipfile
 
 
 FileInfo = namedtuple('FileInfo', 'name data')
