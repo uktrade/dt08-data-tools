@@ -110,9 +110,10 @@ class LocalStorage(Storage):
         with open(path, 'w') as file:
             file.write(data)
 
-    def read_file(self, file_name):
+    def read_file(self, file_name, binary=False):
         path = self._full_path(file_name)
-        with open(path) as file:
+        mode = 'br' if binary else 'r'
+        with open(path, mode) as file:
             return file.read()
 
     def delete_file(self, file_name):
