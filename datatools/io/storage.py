@@ -100,7 +100,10 @@ class LocalStorage(Storage):
     def get_file_names(self):
         for p in self._path.glob('**/*'):
             if p.is_file():
-                yield str(p)[len(self.base_path)+1:]
+                fn = str(p)[len(self.base_path):]
+                if fn.startswith(os.path.sep):
+                    fn = fn[1:]
+                yield fn
 
     def write_file(self, file_name, data):
         path = self._full_path(file_name)
