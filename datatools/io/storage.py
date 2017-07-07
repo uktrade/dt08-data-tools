@@ -59,7 +59,7 @@ class S3Storage(Storage):
 
     def _rel_file_name(self, file_name):
         if file_name.startswith(self._filename_prefix):
-            return file_name[len(self._filename_prefix):]
+            return file_name[len(self._filename_prefix)+1:]
 
     def delete_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
@@ -98,7 +98,9 @@ class LocalStorage(Storage):
         self._path = Path(base_path)
 
     def get_file_names(self):
-        yield from self._path.glob('**/*')
+        for p in self._path.glob('**/*'):
+            if p.is_file():
+                yield str(p)[len(self.base_path)+1:]
 
     def write_file(self, file_name, data):
         path = self._full_path(file_name)

@@ -37,8 +37,8 @@ def storage_test(storage_instance):
     test_file_data = 'test-data-{}'.format(uuid.uuid1().hex)
     storage_instance.write_file(test_file_name, test_file_data)
 
-    file_names = [str(i) for i in storage_instance.get_file_names()]
-    assert any(fn.endswith(test_file_name) for fn in file_names)
+    file_names = list(storage_instance.get_file_names())
+    assert test_file_name in file_names            # we only assert existence because S3 reuses the storage location
 
     test_file_data_actual = storage_instance.read_file(test_file_name)
 
