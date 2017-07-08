@@ -8,6 +8,7 @@ from contextlib import contextmanager
 
 from datatools.io.storage import Storage, LocalStorage
 from datatools.io.datafile_provider import DatafileProvider
+from datatools.io.storage import LocalStorage, Storage
 
 
 class StorageMock(Storage):
@@ -43,8 +44,6 @@ class TestDatafileProvider:
                 assert name == 'some-file.txt'
                 assert data.read().decode() == 'test-data'
 
-    def test_read_files_from_zip(self):
-        pass
 
 @contextmanager
 def tmp_zipfile():

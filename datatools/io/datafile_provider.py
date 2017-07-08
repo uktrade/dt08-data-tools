@@ -1,3 +1,11 @@
+import zipfile
+from collections import namedtuple
+from io import BytesIO
+
+
+FileInfo = namedtuple('FileInfo', 'name data')
+
+
 class DatafileProvider:
     ignore_filename_patterns = [
         '.DS_Store',
