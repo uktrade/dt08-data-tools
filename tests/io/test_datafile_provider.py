@@ -1,4 +1,12 @@
-from datatools.io.storage import Storage
+import os
+import tempfile
+import uuid
+import zipfile
+
+import pytest
+from contextlib import contextmanager
+
+from datatools.io.storage import Storage, LocalStorage
 from datatools.io.datafile_provider import DatafileProvider
 
 
@@ -19,7 +27,31 @@ class StorageMock(Storage):
         raise NotImplementedError
 
 
-def test_datafile_provider():
-    storage = StorageMock()
-    dfp = DatafileProvider(storage)
-    assert list(dfp.get_file_names()) == ['file1', 'file2']
+class TestDatafileProvider:
+
+    def test_get_file_name(self):
+        storage = StorageMock()
+        dfp = DatafileProvider(storage)
+        assert list(dfp.get_file_names()) == ['file1', 'file2']
+
+    def test_read_files(self):
+        with tmp_zipfile() as tmpdirname:
+            # run test
+            storage = LocalStorage(tmpdirname)
+            dfp = DatafileProvider(storage)
+            for name, data in dfp.read_files('test-zipfile.zip', unpack=True):
+                assert name == 'some-file.txt'
+                assert data.read().decode() == 'test-data'
+
+    def test_read_files_from_zip(self):
+        pass
+
+@contextmanager
+def tmp_zipfile():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        # create zip file to test extraction
+        zf_path = os.path.join(tmpdirname, 'test-zipfile.zip')
+        zf = zipfile.ZipFile(zf_path, mode='w')
+        zf.writestr('some-file.txt', data='test-data')
+        zf.close()
+        yield tmpdirname
