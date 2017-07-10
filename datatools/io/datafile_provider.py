@@ -1,9 +1,7 @@
 import zipfile
-from collections import namedtuple
 from io import BytesIO
 
-
-FileInfo = namedtuple('FileInfo', 'name data')
+from datatools.io.fileinfo import FileInfo
 
 
 class DatafileProvider:
