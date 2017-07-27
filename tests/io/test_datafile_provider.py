@@ -27,6 +27,12 @@ class StorageMock(Storage):
     def create_storage(self, folder_name):
         raise NotImplementedError
 
+    def __str__(self):
+        return f'<StorageMock>'
+
+    def get_sub_storage(self):
+        raise NotImplementedError
+
 
 class TestDatafileProvider:
 

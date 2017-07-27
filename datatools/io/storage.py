@@ -14,6 +14,10 @@ class Storage(metaclass=ABCMeta):
     """
 
     @abstractmethod
+    def __str__(self):
+        ...
+
+    @abstractmethod
     def get_file_names(self):
         ...
 
@@ -33,6 +37,10 @@ class Storage(metaclass=ABCMeta):
     def create_storage(self, folder_name):
         ...
 
+    @abstractmethod
+    def get_sub_storage(self, sub_folder):
+        ...
+
 
 class S3Storage(Storage):
     def __init__(self, bucket_name):
@@ -41,11 +49,14 @@ class S3Storage(Storage):
         self.bucket_name = dirs[0]
         self._filename_prefix = '/'.join(dirs[1:])
 
+    def __str__(self):
+        return f'<io.storage.S3Storage:{self.bucket_name}/{self._filename_prefix}>'
+
     def _strip_scheme(self, bucket_name):
         if bucket_name.startswith('s3://'):
             return bucket_name[5:]
         return bucket_name
-    
+
     def _get_bucket(self):
         s3 = boto3.resource('s3')
         return s3.Bucket(self.bucket_name)
@@ -63,7 +74,7 @@ class S3Storage(Storage):
 
     def delete_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
-        
+
         b = self._get_bucket()
         b.delete_objects(Delete={
             'Objects': [
@@ -90,12 +101,27 @@ class S3Storage(Storage):
     def create_storage(self, folder_name):
         raise NotImplemented()
 
+    def _strip_path_separators(self, path):
+        return path.strip('/')
+
+    def get_sub_storage(self, sub_folder):
+        sub_folder = self._strip_path_separators(sub_folder)
+        sub_storage_path = f'{self.bucket_name}/{self._filename_prefix}/{sub_folder}'
+        return self.__class__(sub_storage_path)
+
 
 class LocalStorage(Storage):
 
     def __init__(self, base_path):
-        self.base_path = base_path
+        """
+        Args:
+            base_path: PosixPath or string
+        """
+        self.base_path = str(base_path)
         self._path = Path(base_path)
+
+    def __str__(self):
+        return f'<io.storage.LocalStorage:{self.base_path}>'
 
     def get_file_names(self):
         for p in self._path.glob('**/*'):
@@ -107,6 +133,9 @@ class LocalStorage(Storage):
 
     def write_file(self, file_name, data):
         path = self._full_path(file_name)
+        dir_name = os.path.dirname(path)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
         with open(path, 'w') as file:
             file.write(data)
 
@@ -125,6 +154,10 @@ class LocalStorage(Storage):
 
     def _full_path(self, file_name):
         return os.path.join(self.base_path, file_name)
+
+    def get_sub_storage(self, sub_folder):
+        path = self._path.joinpath(sub_folder)
+        return self.__class__(path)
 
 
 class StorageFactory:
