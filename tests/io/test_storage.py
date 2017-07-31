@@ -25,6 +25,14 @@ class TestS3Storage:
         assert S3Storage('s3://somebucket').bucket_name == \
             S3Storage('somebucket').bucket_name
 
+    def test_sub_storage(self):
+        bucket = 'input.data.dev.uktrade.io/inputs_tests'
+        storage = S3Storage(bucket)
+        storage.write_file('some_sub_folder/some_file', 'some data')
+        sub_storage = storage.get_sub_storage('some_sub_folder')
+        filenames = list(sub_storage.get_file_names())
+        assert 'some_file' in filenames
+
 
 class TestLocalStorage:
     def test_storage(self):
@@ -33,10 +41,20 @@ class TestLocalStorage:
             storage_test(local_storage)
 
     def test_does_not_present_subfolders(self):
+        """ get_file_names should not return folders, only files
+        """
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_storage = storage.LocalStorage(tmpdirname)
             os.makedirs(os.path.join(tmpdirname, 'a_sub_folder'))
             assert len(list(local_storage.get_file_names())) == 0
+
+    def test_sub_storage(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_storage = storage.LocalStorage(tmpdirname)
+            local_storage.write_file('some_sub_folder/test_file', 'test data')
+            sub_storage = local_storage.get_sub_storage('some_sub_folder')
+            filenames = list(sub_storage.get_file_names())
+            assert 'test_file' in filenames
 
 
 def storage_test(storage_instance):
