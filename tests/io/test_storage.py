@@ -66,7 +66,8 @@ def storage_test(storage_instance):
     file_names = list(storage_instance.get_file_names())
     assert test_file_name in file_names            # we only assert existence because S3 reuses the storage location
 
-    test_file_data_actual = storage_instance.read_file(test_file_name)
+    data = storage_instance.read_file(test_file_name).read()
+    test_file_data_actual = data if isinstance(data, str) else data.decode()
 
     assert test_file_data == test_file_data_actual
 

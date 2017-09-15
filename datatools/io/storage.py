@@ -86,12 +86,12 @@ class S3Storage(Storage):
     def write_file(self, file_name, data):
         abs_fn = self._abs_file_name(file_name)
         b = self._get_bucket()
-        b.put_object(Key=abs_fn, Body=data)
+        b.put_object(Key=abs_fn, Body=data, ServerSideEncryption='AES256')
 
     def read_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
         obj = self._get_s3_object(abs_fn)
-        return obj.get()['Body'].read().decode()
+        return obj.get()['Body']
 
     def get_file_names(self):
         bucket = self._get_bucket()
@@ -142,8 +142,7 @@ class LocalStorage(Storage):
     def read_file(self, file_name, binary=False):
         path = self._full_path(file_name)
         mode = 'br' if binary else 'r'
-        with open(path, mode) as file:
-            return file.read()
+        return open(path, mode)
 
     def delete_file(self, file_name):
         path = self._full_path(file_name)
