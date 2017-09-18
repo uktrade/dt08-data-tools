@@ -10,5 +10,4 @@ class FileInfo(FileInfoNT):
     def from_path(cls, path):
         """ Create FileInfo object from local path """
 
-        with open(path, 'rb') as file:
-            return cls(path, file.read())
+        return cls(path, open(path, 'rb'))

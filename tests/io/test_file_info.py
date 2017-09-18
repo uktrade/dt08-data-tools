@@ -16,4 +16,4 @@ def test_file_info_create_from_path():
         fi = FileInfo.from_path(path)
 
         assert fi.name == path
-        assert fi.data == data
+        assert fi.data.read() == data

@@ -46,8 +46,8 @@ class DatafileProvider:
             yield from self.read_files(fn, unpack=unpack)
 
     @classmethod
-    def read_files_from_zip(cls, bdata):
-        zf = zipfile.ZipFile(BytesIO(bdata), mode='r')
+    def read_files_from_zip(cls, file_object):
+        zf = zipfile.ZipFile(file_object, mode='r')
         members = zf.namelist()
         for m in members:
             if cls._should_ignore(m):
