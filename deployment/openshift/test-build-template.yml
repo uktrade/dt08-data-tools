@@ -1,0 +1,41 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: dt08-template
+  namespace: input
+  annotations:
+    description: data platform service template
+    tags: python, data-platform
+    iconClass: icon-python
+objects:
+# Image Streams
+- kind: BuildConfig
+  metadata:
+    name: dt08-test-build
+    namespace: input
+  spec:
+    triggers:
+      - type: ImageChange
+      - type: ConfigChange
+    runPolicy: Serial
+    source:
+      type: Git
+      git:
+        uri: 'ssh://git@github.com/uktrade/dt08-data-tools.git'
+        ref: develop
+      sourceSecret:
+        name: dt08-sshsecret
+    strategy:
+      type: Docker
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: 'miniconda3:latest'
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'dt08-test-build:latest'
+    resources: {}
+    postCommit:
+      script: /bin/bash -c "source activate dt08 && pip install . && pytest -s"
+
