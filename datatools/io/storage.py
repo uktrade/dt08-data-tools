@@ -96,8 +96,10 @@ class S3Storage(Storage):
     def get_file_names(self):
         bucket = self._get_bucket()
         for o in bucket.objects.all():
-            yield self._rel_file_name(o.key)
-
+            fn = self._rel_file_name(o.key)
+            if fn:
+                yield fn
+    
     def create_storage(self, folder_name):
         raise NotImplemented()
 
@@ -136,7 +138,7 @@ class LocalStorage(Storage):
         dir_name = os.path.dirname(path)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        with open(path, 'w') as file:
+        with open(path, 'wb') as file:
             file.write(data)
 
     def read_file(self, file_name, binary=False):

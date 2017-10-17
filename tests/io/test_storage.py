@@ -51,7 +51,7 @@ class TestLocalStorage:
     def test_sub_storage(self):
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_storage = storage.LocalStorage(tmpdirname)
-            local_storage.write_file('some_sub_folder/test_file', 'test data')
+            local_storage.write_file('some_sub_folder/test_file', b'test data')
             sub_storage = local_storage.get_sub_storage('some_sub_folder')
             filenames = list(sub_storage.get_file_names())
             assert 'test_file' in filenames
@@ -60,16 +60,16 @@ class TestLocalStorage:
 def storage_test(storage_instance):
     """ Test an instance of a Storage class """
     test_file_name = 'test-{}.test'.format(uuid.uuid1().hex)
-    test_file_data = 'test-data-{}'.format(uuid.uuid1().hex)
-    storage_instance.write_file(test_file_name, test_file_data)
+    test_file_data = 'test-data'
+    storage_instance.write_file(test_file_name, bytes(test_file_data, 'utf-8'))
 
     file_names = list(storage_instance.get_file_names())
     assert test_file_name in file_names            # we only assert existence because S3 reuses the storage location
 
     data = storage_instance.read_file(test_file_name).read()
-    test_file_data_actual = data if isinstance(data, str) else data.decode()
+    data = data if isinstance(data, str) else data.decode()
 
-    assert test_file_data == test_file_data_actual
+    assert test_file_data == data
 
     # clean up
     storage_instance.delete_file(test_file_name)
