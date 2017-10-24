@@ -1,6 +1,7 @@
+import io
+import os
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-import os
 
 import boto3
 
@@ -91,7 +92,10 @@ class S3Storage(Storage):
     def read_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
         obj = self._get_s3_object(abs_fn)
-        return obj.get()['Body']
+        bytes_io = io.BytesIO()
+        obj.download_fileobj(bytes_io)
+        bytes_io.seek(0)
+        return bytes_io
 
     def get_file_names(self):
         bucket = self._get_bucket()
@@ -141,10 +145,9 @@ class LocalStorage(Storage):
         with open(path, 'wb') as file:
             file.write(data)
 
-    def read_file(self, file_name, binary=False):
+    def read_file(self, file_name):
         path = self._full_path(file_name)
-        mode = 'br' if binary else 'r'
-        return open(path, mode)
+        return open(path, 'br')
 
     def delete_file(self, file_name):
         path = self._full_path(file_name)

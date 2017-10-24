@@ -28,10 +28,10 @@ class DatafileProvider:
         Returns FileInfo objects (file name, and binary data)
         """
         if file_name.endswith('.zip') and unpack:
-            bdata = self.storage.read_file(file_name, binary=True)
+            bdata = self.storage.read_file(file_name)
             yield from self.read_files_from_zip(bdata)
         else:
-            yield FileInfo(file_name, self.storage.read_file(file_name, binary=True))
+            yield FileInfo(file_name, self.storage.read_file(file_name))
 
     @classmethod
     def _should_ignore(cls, filename):
