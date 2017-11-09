@@ -44,11 +44,13 @@ class Storage(metaclass=ABCMeta):
 
 
 class S3Storage(Storage):
-    def __init__(self, bucket_name):
+    def __init__(self, bucket_name, profile_name=None):
         bucket_name = self._strip_scheme(bucket_name)
         dirs = bucket_name.split('/')
         self.bucket_name = dirs[0]
         self._filename_prefix = '/'.join(dirs[1:])
+        self.profile_name = profile_name
+        self.session = boto3.session.Session(profile_name=profile_name)
 
     def __str__(self):
         return f'<io.storage.S3Storage:{self.bucket_name}/{self._filename_prefix}>'
@@ -59,11 +61,11 @@ class S3Storage(Storage):
         return bucket_name
 
     def _get_bucket(self):
-        s3 = boto3.resource('s3')
+        s3 = self.session.resource('s3')
         return s3.Bucket(self.bucket_name)
 
     def _get_s3_object(self, key):
-        s3 = boto3.resource('s3')
+        s3 = self.session.resource('s3')
         return s3.Object(self.bucket_name, key)
 
     def _abs_file_name(self, file_name):
