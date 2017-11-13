@@ -115,7 +115,7 @@ class S3Storage(Storage):
     def get_sub_storage(self, sub_folder):
         sub_folder = self._strip_path_separators(sub_folder)
         sub_storage_path = f'{self.bucket_name}/{self._filename_prefix}/{sub_folder}'
-        return self.__class__(sub_storage_path)
+        return self.__class__(sub_storage_path, profile_name=self.profile_name)
 
 
 class LocalStorage(Storage):
