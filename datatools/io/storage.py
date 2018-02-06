@@ -74,6 +74,7 @@ class S3Storage(Storage):
     def _rel_file_name(self, file_name):
         if file_name.startswith(self._filename_prefix):
             return file_name[len(self._filename_prefix)+1:]
+        return None
 
     def delete_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
@@ -101,10 +102,9 @@ class S3Storage(Storage):
 
     def get_file_names(self):
         bucket = self._get_bucket()
-        for o in bucket.objects.all():
-            fn = self._rel_file_name(o.key)
-            if fn:
-                yield fn
+        substorage_objs = [(self._rel_file_name(o.key), o) for o in bucket.objects.all() if self._rel_file_name(o.key)]
+        for fn, _ in sorted(substorage_objs, key=lambda o: o[1].last_modified):
+            yield fn
     
     def create_storage(self, folder_name):
         raise NotImplemented()

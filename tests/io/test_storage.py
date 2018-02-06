@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 import uuid
 
 import pytest
@@ -32,6 +33,28 @@ class TestS3Storage:
         sub_storage = storage.get_sub_storage('some_sub_folder')
         filenames = list(sub_storage.get_file_names())
         assert 'some_file' in filenames
+        # clean up
+        sub_storage.delete_file('some_file')
+
+    def test_files_listed_in_order(self):
+        """Objects should be retrieved in order"""
+        bucket = 'input.data.dev.uktrade.io/inputs_tests'
+        storage = S3Storage(bucket)
+        storage.write_file('ordered_sub_folder/some_file_4', 'some data 4')
+        time.sleep(1)
+        storage.write_file('ordered_sub_folder/some_file_2', 'some data 2')
+        time.sleep(1)
+        storage.write_file('ordered_sub_folder/some_file_3', 'some data 3')
+        time.sleep(1)
+        storage.write_file('ordered_sub_folder/some_file_1', 'some data 1')
+        sub_storage = storage.get_sub_storage('ordered_sub_folder')
+        filenames = list(sub_storage.get_file_names())
+        assert filenames == ['some_file_4', 'some_file_2', 'some_file_3', 'some_file_1']
+        # clean up
+        sub_storage.delete_file('some_file_1')
+        sub_storage.delete_file('some_file_2')
+        sub_storage.delete_file('some_file_3')
+        sub_storage.delete_file('some_file_4')
 
 
 class TestLocalStorage:
