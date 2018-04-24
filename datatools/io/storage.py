@@ -44,13 +44,19 @@ class Storage(metaclass=ABCMeta):
 
 
 class S3Storage(Storage):
-    def __init__(self, bucket_name, profile_name=None):
+    def __init__(self, bucket_name, aws_access_key_id=None, aws_secret_access_key=None, profile_name=None):
         bucket_name = self._strip_scheme(bucket_name)
         dirs = bucket_name.split('/')
         self.bucket_name = dirs[0]
         self._filename_prefix = '/'.join(dirs[1:])
         self.profile_name = profile_name
-        self.session = boto3.session.Session(profile_name=profile_name)
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.session = boto3.session.Session(
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            profile_name=profile_name
+        )
 
     def __str__(self):
         return f'<io.storage.S3Storage:{self.bucket_name}/{self._filename_prefix}>'
@@ -115,7 +121,12 @@ class S3Storage(Storage):
     def get_sub_storage(self, sub_folder):
         sub_folder = self._strip_path_separators(sub_folder)
         sub_storage_path = f'{self.bucket_name}/{self._filename_prefix}/{sub_folder}'
-        return self.__class__(sub_storage_path, profile_name=self.profile_name)
+        return self.__class__(
+            sub_storage_path,
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key,
+            profile_name=self.profile_name
+        )
 
 
 class LocalStorage(Storage):
