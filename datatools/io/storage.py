@@ -143,7 +143,7 @@ class LocalStorage(Storage):
         return f'<io.storage.LocalStorage:{self.base_path}>'
 
     def get_file_names(self):
-        for p in self._path.glob('**/*'):
+        for p in sorted(self._path.glob('**/*'), key=os.path.getmtime):
             if p.is_file():
                 fn = str(p)[len(self.base_path):]
                 if fn.startswith(os.path.sep):

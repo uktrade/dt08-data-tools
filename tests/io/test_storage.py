@@ -1,3 +1,4 @@
+import datetime
 import os
 import tempfile
 import time
@@ -79,6 +80,22 @@ class TestLocalStorage:
             filenames = list(sub_storage.get_file_names())
             assert 'test_file' in filenames
 
+    def test_sub_storage_right_file_order(self, mocker):
+        mocker.patch.object(os.path, 'getmtime', side_effect=_mock_modified_date)
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_storage = storage.LocalStorage(tmpdirname)
+            local_storage.write_file('some_sub_folder/2018-01-03_test_file', b'test data 3')
+            local_storage.write_file('some_sub_folder/2018-01-02_test_file', b'test data 2')
+            local_storage.write_file('some_sub_folder/2018-01-04_test_file', b'test data 4')
+            sub_storage = local_storage.get_sub_storage('some_sub_folder')
+            filenames = list(sub_storage.get_file_names())
+            expected_order = [
+                '2018-01-02_test_file',
+                '2018-01-03_test_file',
+                '2018-01-04_test_file',
+            ]
+            assert [f == expected_order[i] for i, f in enumerate(filenames)]
+
 
 def storage_test(storage_instance):
     """ Test an instance of a Storage class """
@@ -96,3 +113,12 @@ def storage_test(storage_instance):
 
     # clean up
     storage_instance.delete_file(test_file_name)
+
+
+def _mock_modified_date(path):
+    if str(path).endswith('some_sub_folder/2018-01-02_test_file'):
+        return datetime.date(2018, 1, 2)
+    if str(path).endswith('some_sub_folder/2018-01-03_test_file'):
+        return datetime.date(2018, 1, 3)
+    if str(path).endswith('some_sub_folder/2018-01-04_test_file'):
+        return datetime.date(2018, 1, 4)
