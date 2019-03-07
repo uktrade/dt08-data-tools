@@ -48,7 +48,7 @@ class S3Storage(Storage):
         bucket_name = self._strip_scheme(bucket_name)
         dirs = bucket_name.split('/')
         self.bucket_name = dirs[0]
-        self._filename_prefix = '/'.join(dirs[1:])
+        self._filename_prefix = '/'.join(dirs[1:]) if len(dirs) > 1 else ''
         self.profile_name = profile_name
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
@@ -63,7 +63,7 @@ class S3Storage(Storage):
 
     def _strip_scheme(self, bucket_name):
         if bucket_name.startswith('s3://'):
-            return bucket_name[5:]
+            return bucket_name[5:].rstrip("/")
         return bucket_name
 
     def _get_bucket(self):
@@ -75,11 +75,11 @@ class S3Storage(Storage):
         return s3.Object(self.bucket_name, key)
 
     def _abs_file_name(self, file_name):
-        return self._filename_prefix + '/' + file_name
+        return self._filename_prefix + '/' + file_name if self._filename_prefix else file_name
 
     def _rel_file_name(self, file_name):
         if file_name.startswith(self._filename_prefix):
-            return file_name[len(self._filename_prefix)+1:]
+            return file_name[len(self._filename_prefix)+1:] if self._filename_prefix else file_name
         return None
 
     def delete_file(self, file_name):
@@ -120,7 +120,8 @@ class S3Storage(Storage):
 
     def get_sub_storage(self, sub_folder):
         sub_folder = self._strip_path_separators(sub_folder)
-        sub_storage_path = f'{self.bucket_name}/{self._filename_prefix}/{sub_folder}'
+        sub_storage_path = \
+            f'{self.bucket_name}{("/" + self._filename_prefix) if self._filename_prefix else ""}/{sub_folder}'
         return self.__class__(
             sub_storage_path,
             aws_access_key_id=self.aws_access_key_id,
