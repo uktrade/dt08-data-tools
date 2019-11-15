@@ -17,5 +17,6 @@ dependencies:
 - zlib=1.2.8=3
 - pip:
   - pytest-mock==1.6.0
+  - nltk==3.2.5
 prefix: /Users/cammil/anaconda/envs/dt08
 
