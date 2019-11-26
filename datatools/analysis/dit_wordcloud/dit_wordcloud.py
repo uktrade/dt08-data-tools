@@ -1,26 +1,32 @@
-import random
+import sys
+sys.path.append('..')
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
+from utils.nlp.dit_wordcloud import striphtml, striptradegov
 
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 # TODO handle for stopwords during install.
-# nltk.download('stopwords') or python -m nltk.downloader stopwords
-
-
+ #or python -m nltk.downloader stopwords
+import random
 
 try:
     from xml.etree.cElementTree import XML
 except ImportError:
     from xml.etree.ElementTree import XML
 
-from datatools.utils.nlp import striphtml, striptradegov
+
 
 class Dit_wordcloud():
     def __init__(self):
+
+        self.english_stopwords = set(stopwords.words('english'))
+
         self.jargon_stopwords = set()
-        self.people_stopwords = set()
-        self.stop_words = set(stopwords.words('english'))
+        self.other_stopwords = set()
+
         self.tokenizer = RegexpTokenizer(r'\w+')
 
         self.dit_colors =  [
@@ -38,8 +44,6 @@ class Dit_wordcloud():
         optional kwargs
         jargon_stopwords: list or set
         people_stopwords: list or set
-        path_to_jargon_stopwords: string
-        path_to_people_stopwords: string
 
         '''
         if kwargs.get("jargon_stopwords", None):
@@ -49,23 +53,30 @@ class Dit_wordcloud():
             else:
                 self.jargon_stopwords.update(_jargon_stopwords)
 
-        if kwargs.get("people_stopwords", None):
-            _people_stopwords = kwargs.get("people_stopwords")
-            if type(_people_stopwords) is list:
-                self.people_stopwords.update(set(_people_stopwords))
+        for k in kwargs.keys():
+            if k in ["jargon_stopwords"]:
+                pass
             else:
-                self.people_stopwords.update(_people_stopwords)
+                _new_stopwords = kwargs.get(k)
+                if type(_new_stopwords) is list:
+                    self.other_stopwords.update(set(_new_stopwords = kwargs.get(k)))
+                else:
+                    self.other_stopwords.update(_new_stopwords)
 
     def get_tokens(self, sentence, lower=False):
+        ''''
+        This tokenizes a sentence and strips away numerics, removes ? marks and tradegov
+        '''
         if lower is True:
             sentence = sentence.lower()
         sentence = striptradegov(striphtml(sentence))
         sentence = sentence.translate({ord(ch): None for ch in '0123456789'})
         return self.tokenizer.tokenize(sentence)
 
-    def process_raw_text(self, sentence, filters=['stop_words', 'people_stopwords']):
+    def process_raw_text(self, sentence, filters=['english_stopwords', 'other_stopwords', 'jargon_stopwords']):
         '''
-        filers: list of strings where string is in set 'stop_words', 'people_stopwords', 'jargon_stopwords'
+        This tokenises text according to process_raw_text
+        filers: list of strings where string is in any of the stopwords provided
         '''
         word_tokens = self.get_tokens(sentence)
 
@@ -90,29 +101,26 @@ class Dit_wordcloud():
             c = int(random.randint(1, len(self.dit_colors) - 1))
             return self.dit_colors[c]
 
-    def create_word_cloud(self, list_of_documents):
+    def create_word_cloud(self, list_of_documents, notebook, figurepath):
         words_flat_list = [item for document in list_of_documents for item in document]
         wordcloud = WordCloud(
             background_color='white', max_words=300,
             width=1920, height=1080, color_func=self.random_color_func,
             stopwords=['health', 'care'] + list(STOPWORDS)
         ).generate(' '.join(words_flat_list))
-        plt.figure(figsize=(80, 80))
+        #fig = plt.figure(figsize=(80, 80))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis("off")
-        plt.show()
+        if notebook:
+            plt.show()
+        else:
+            print("Word cloud saved to file: {}".format(figurepath))
+            plt.savefig(figurepath)
+        plt.close()
 
-
-    def make_visual(self, text_string):
+    def make_visual(self, text_string, notebook=True, figurepath='wordcloud.pdf'):
         ptext = self.process_raw_text(text_string)
-        self.create_word_cloud([[p.lower() for p in ptext]])
+        self.create_word_cloud([[p.lower() for p in ptext]], notebook, figurepath)
 
-if __name__ in "__main__":
-    text_string  = """
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore 
-magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo 
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-"""
-    cloud = WordCloud()
-    cloud.mmake_visual([[p.lower() for p in text_string]])
+def create():
+    return Dit_wordcloud()
