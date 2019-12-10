@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    'boto3'
+    'boto3', 'nltk', 'matplotlib', 'wordcloud',
     ]
 
 setup(
