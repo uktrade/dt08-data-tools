@@ -6,7 +6,7 @@ requirements = [
 
 setup(
     name='uktrade_data_tools',
-    version='0.1.5',
+    version='0.1.6',
     description='utilities for use in data software',
     url='https://github/uktrade/dt08-data-tools',
     author='Department for International Trade Data Team',

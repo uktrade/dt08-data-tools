@@ -78,7 +78,7 @@ class S3Storage(Storage):
         return self._filename_prefix + '/' + file_name if self._filename_prefix else file_name
 
     def _rel_file_name(self, file_name):
-        if file_name.startswith(self._filename_prefix):
+        if file_name.startswith(f'{self._filename_prefix}/'):
             return file_name[len(self._filename_prefix)+1:] if self._filename_prefix else file_name
         return None
 
