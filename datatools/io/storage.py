@@ -96,7 +96,7 @@ class S3Storage(Storage):
     def write_file(self, file_name, data):
         abs_fn = self._abs_file_name(file_name)
         b = self._get_bucket()
-        b.put_object(Key=abs_fn, Body=data, ServerSideEncryption='AES256')
+        return b.put_object(Key=abs_fn, Body=data, ServerSideEncryption='AES256')
 
     def read_file(self, file_name):
         abs_fn = self._abs_file_name(file_name)
